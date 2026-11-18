@@ -31,12 +31,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   if (missing) return <main className="p-12">Project not found. <Link href="/dashboard" className="underline">Back to projects</Link></main>;
   if (!p) return <main className="p-12">Loading…</main>;
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
+    <main className="mx-auto w-full max-w-5xl px-6 py-12">
       <Link href="/dashboard" className="text-sm text-neutral-500">← Projects</Link>
       <h1 className="mt-2 text-2xl font-bold">{p.title}</h1>
       {p.status === "failed" && <p className="mt-4 text-red-600">Failed: {p.error}</p>}
       {p.status !== "done" && p.status !== "failed" && <p className="mt-4 text-neutral-500">{p.stage ?? "Queued"}…</p>}
-      <div className="mt-8 grid gap-6 sm:grid-cols-3">
+      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {p.clips.map((c) => (
           <div key={c.id} className="rounded-xl border border-neutral-200 p-3 dark:border-neutral-800">
             <video src={`/api/files/${c.file_path}`} controls className="aspect-[9/16] w-full rounded-lg bg-black" />

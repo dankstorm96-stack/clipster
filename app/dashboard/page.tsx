@@ -50,19 +50,19 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
+    <main className="mx-auto w-full max-w-3xl px-6 py-12">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Projects</h1>
         <button onClick={logout} className="ml-auto mr-4 text-sm text-neutral-500 underline">Log out</button>
-        <label className="cursor-pointer rounded-lg bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black">
+        <label className="shrink-0 cursor-pointer rounded-lg bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black">
           {busy ? "Uploading…" : "Upload video"}
           <input type="file" accept="video/*" className="hidden" onChange={upload} disabled={busy} />
         </label>
       </div>
       <form onSubmit={importUrl} className="mt-6 flex gap-2">
         <input value={url} onChange={(e) => setUrl(e.target.value)} type="url" placeholder="Or paste a video link (https://…)"
-          className="flex-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700" />
-        <button disabled={busy || !url} className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-neutral-700">
+          className="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700" />
+        <button disabled={busy || !url} className="shrink-0 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-neutral-700">
           Get clips
         </button>
       </form>
@@ -70,9 +70,9 @@ export default function Dashboard() {
       <ul className="mt-8 divide-y divide-neutral-200 dark:divide-neutral-800">
         {projects.map((p) => (
           <li key={p.id}>
-            <Link href={`/projects/${p.id}`} className="flex items-center justify-between py-4 hover:opacity-70">
-              <span className="font-medium">{p.title}</span>
-              <span className="text-sm text-neutral-500">{p.status === "done" ? "Ready" : p.status === "failed" ? "Failed" : p.stage ?? "Queued"}</span>
+            <Link href={`/projects/${p.id}`} className="flex items-center justify-between gap-4 py-4 hover:opacity-70">
+              <span className="min-w-0 truncate font-medium">{p.title}</span>
+              <span className="shrink-0 text-sm text-neutral-500">{p.status === "done" ? "Ready" : p.status === "failed" ? "Failed" : p.stage ?? "Queued"}</span>
             </Link>
           </li>
         ))}

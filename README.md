@@ -1,4 +1,4 @@
-# ClipForge
+# Clipster
 
 Turn long videos into short vertical clips with animated captions.
 

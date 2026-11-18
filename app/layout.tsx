@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ClipForge",
+  title: "Clipster",
   description: "Turn long videos into short, captioned clips.",
 };
 

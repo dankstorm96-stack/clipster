@@ -9,10 +9,10 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="mx-auto max-w-5xl px-6 py-24">
-      <h1 className="text-5xl font-bold tracking-tight">Turn any long video into short clips.</h1>
+    <main className="mx-auto w-full max-w-5xl px-6 py-16 sm:py-24">
+      <h1 className="text-4xl font-bold sm:text-5xl tracking-tight">Turn any long video into short clips.</h1>
       <p className="mt-4 max-w-2xl text-lg text-neutral-500">
-        Upload a video. ClipForge finds the best moments, reframes them vertically, adds captions and hands you
+        Upload a video. Clipster finds the best moments, reframes them vertically, adds captions and hands you
         finished clips.
       </p>
       <Link href="/dashboard" className="mt-8 inline-block rounded-lg bg-black px-6 py-3 font-medium text-white dark:bg-white dark:text-black">

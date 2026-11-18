@@ -20,7 +20,7 @@ export default function Login() {
   }
 
   return (
-    <main className="mx-auto max-w-sm px-6 py-24">
+    <main className="mx-auto w-full max-w-sm px-6 py-24">
       <h1 className="text-2xl font-bold">{mode === "login" ? "Sign in" : "Create account"}</h1>
       <form onSubmit={submit} className="mt-6 space-y-3">
         <input name="email" type="email" required placeholder="Email" className="w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 dark:border-neutral-700" />
