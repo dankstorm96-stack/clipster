@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clipster</title>
+  <meta name="description" content="Turn long videos into short vertical clips with animated captions.">
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #171717; --muted: #6b6b6b; --border: #e5e5e5;
+      --btn-bg: #000000; --btn-fg: #ffffff; --accent: #f5c400;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0a0a0a; --fg: #ededed; --muted: #a0a0a0; --border: #262626; --btn-bg: #ffffff; --btn-fg: #000000; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
+    main { width: 100%; max-width: 64rem; margin: 0 auto; padding: 4rem 1rem; }
+    @media (min-width: 640px) { main { padding: 6rem 1.5rem; } }
+    h1 { font-size: clamp(2.25rem, 6vw, 3.25rem); line-height: 1.1; letter-spacing: -0.02em; margin: 0; }
+    .lead { margin-top: 1rem; max-width: 40rem; font-size: 1.125rem; color: var(--muted); }
+    .actions { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .btn { display: inline-block; border-radius: 0.5rem; padding: 0.75rem 1.5rem; font-weight: 500; text-decoration: none; }
+    .btn-primary { background: var(--btn-bg); color: var(--btn-fg); }
+    .btn-secondary { border: 1px solid var(--border); color: var(--fg); }
+    .grid { margin-top: 5rem; display: grid; gap: 1.5rem; }
+    @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+    .card { border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; }
+    .card h2 { font-size: 1rem; margin: 0; }
+    .card p { margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--muted); }
+    .demo { margin-top: 4rem; display: flex; justify-content: center; }
+    .phone { width: 220px; aspect-ratio: 9 / 16; border-radius: 1.25rem; background: linear-gradient(160deg, #3b3b98, #182c61 55%, #0b0b1e); position: relative; overflow: hidden; border: 1px solid var(--border); }
+    .caption { position: absolute; left: 0; right: 0; bottom: 22%; display: flex; justify-content: center; flex-wrap: wrap; gap: 0 0.35em; padding: 0 0.75rem; font-weight: 800; font-size: 1.15rem; color: #fff; text-shadow: 0 2px 0 #000, 0 0 6px #000; letter-spacing: 0.02em; }
+    .caption span { display: inline-block; transition: transform 0.12s; }
+    .caption span.on { color: var(--accent); transform: scale(1.15); }
+    footer { margin-top: 5rem; font-size: 0.875rem; color: var(--muted); }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Turn any long video into short clips.</h1>
+    <p class="lead">Upload a video. Clipster finds the best moments, reframes them vertically, adds animated captions and hands you finished clips.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="https://render.com/deploy?repo=https://github.com/dankstorm96-stack/clipster">Deploy your own</a>
+      <a class="btn btn-secondary" href="https://github.com/dankstorm96-stack/clipster">View on GitHub</a>
+    </div>
+
+    <div class="demo" aria-hidden="true">
+      <div class="phone"><div class="caption" id="cap"></div></div>
+    </div>
+
+    <div class="grid">
+      <div class="card"><h2>AI clip finder</h2><p>Transcribes your video and picks the moments most likely to hold attention.</p></div>
+      <div class="card"><h2>Vertical reframe</h2><p>Auto-crops to 9:16 for Shorts, Reels and TikTok.</p></div>
+      <div class="card"><h2>Animated captions</h2><p>Word-by-word captions that pop as they're spoken, burned into every clip.</p></div>
+      <div class="card"><h2>Link import</h2><p>Paste a video link instead of uploading, then download finished MP4s.</p></div>
+    </div>
+
+    <footer>Clipster is open source. This page is a preview; the clip tools run on the full app.</footer>
+  </main>
+  <script>
+    // Small preview of the caption style used in exported clips.
+    const words = ["TURN", "LONG", "VIDEOS", "INTO", "SHORT", "CLIPS", "THAT", "GET", "WATCHED"];
+    const cap = document.getElementById("cap");
+    let i = 0;
+    function tick() {
+      const g = Math.floor(i / 3) * 3;
+      cap.innerHTML = words.slice(g, g + 3).map((w, j) => `<span class="${g + j === i ? "on" : ""}">${w}</span>`).join(" ");
+      i = (i + 1) % words.length;
+    }
+    tick();
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(tick, 450);
+  </script>
+</body>
+</html>
