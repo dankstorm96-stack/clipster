@@ -1,0 +1,22 @@
+# One-click deploy: https://render.com/deploy?repo=https://github.com/dankstorm96-stack/clipster
+services:
+  - type: web
+    name: clipster
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clipster-db
+          property: connectionString
+      # Optional. Leave blank to use placeholder captions and fixed-length clips.
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+databases:
+  - name: clipster-db
+    plan: free
+    databaseName: clipster

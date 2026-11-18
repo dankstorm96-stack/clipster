@@ -21,3 +21,11 @@ npm install
 npm run dev
 ```
 Tables are created on first request. Video jobs run inside the web process; move `processProject` to a queue worker for production.
+
+## Deploy
+
+**Full app (Render):** [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/dankstorm96-stack/clipster)
+
+`render.yaml` creates the web service (built from the `Dockerfile`, which installs ffmpeg and yt-dlp) and a Postgres database. On the free plan, rendered clips are stored on the instance's disk and are lost when it restarts or redeploys; free Postgres databases expire after 30 days. Add a persistent disk or object storage for real use.
+
+**Landing page (GitHub Pages):** the static page in `docs/` is served by GitHub Pages once it is enabled in **Settings → Pages → Branch: `main`, folder: `/docs`**. It is a preview only; the clip tools need the full app.
