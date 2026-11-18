@@ -6,12 +6,13 @@ import { pool, ready } from "./db";
 
 export const DATA_DIR = path.join(process.cwd(), "data");
 
-type Seg = { start: number; end: number; text: string };
+type Word = { start: number; end: number; word: string };
+type Seg = { start: number; end: number; text: string; words: Word[] };
 type Pick = { title: string; reason: string; score: number; start: number; end: number };
 
-function run(cmd: string, args: string[]): Promise<string> {
+function run(cmd: string, args: string[], timeoutMs = 30 * 60_000): Promise<string> {
   return new Promise((resolve, reject) => {
-    const p = spawn(cmd, args);
+    const p = spawn(cmd, args, { timeout: timeoutMs, killSignal: "SIGKILL" });
     let out = "", err = "";
     p.stdout.on("data", (d) => (out += d));
     p.stderr.on("data", (d) => (err += d));
@@ -24,9 +25,45 @@ async function setStage(id: string, stage: string, status = "processing") {
   await pool.query("update projects set stage=$2, status=$3 where id=$1", [id, stage, status]);
 }
 
+async function hasAudio(file: string): Promise<boolean> {
+  const out = await run("ffprobe", ["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", file]);
+  return out.trim().length > 0;
+}
+
 async function duration(file: string): Promise<number> {
   const out = await run("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]);
   return parseFloat(out) || 0;
+}
+
+/** Evenly time words across a span when no word-level timestamps exist. */
+function spreadWords(text: string, start: number, end: number): Word[] {
+  const parts = text.split(/\s+/).filter(Boolean);
+  const step = (end - start) / Math.max(1, parts.length);
+  return parts.map((w, i) => ({ word: w, start: start + i * step, end: start + (i + 1) * step }));
+}
+
+/** Download a public video with yt-dlp. Returns false and marks the project failed on error. */
+export async function importFromUrl(id: string, url: string): Promise<boolean> {
+  await ready();
+  const dir = path.join(DATA_DIR, id);
+  try {
+    const out = await run("yt-dlp", [
+      "--no-playlist", "--no-simulate", "--restrict-filenames",
+      "--js-runtimes", `node:${process.execPath}`,
+      "-f", "bv*[height<=1080]+ba/b[height<=1080]/b", "--merge-output-format", "mp4",
+      "--max-filesize", "2G",
+      "-o", path.join(dir, "source.%(ext)s"),
+      "-O", "after_move:title", "-O", "after_move:filepath",
+      "--", url,
+    ], 15 * 60_000);
+    const [title, file] = out.trim().split("\n").slice(-2);
+    if (!file || !file.startsWith(dir)) throw new Error("Download produced no file");
+    await pool.query("update projects set source_path=$2, title=$3 where id=$1", [id, file, title?.slice(0, 200) || url]);
+    return true;
+  } catch (e) {
+    await pool.query("update projects set status='failed', error=$2 where id=$1", [id, "Download failed: " + String((e as Error).message).slice(0, 500)]);
+    return false;
+  }
 }
 
 /** Whisper if OPENAI_API_KEY is set; otherwise evenly spaced placeholder segments. */
@@ -37,17 +74,29 @@ async function transcribe(audio: string, dur: number): Promise<Seg[]> {
     form.append("file", new Blob([await fs.readFile(audio)]), "audio.mp3");
     form.append("model", "whisper-1");
     form.append("response_format", "verbose_json");
+    form.append("timestamp_granularities[]", "word");
+    form.append("timestamp_granularities[]", "segment");
     const r = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST", headers: { Authorization: `Bearer ${key}` }, body: form,
     });
     if (!r.ok) throw new Error(`Transcription failed: ${r.status}`);
-    const j = (await r.json()) as { segments: { start: number; end: number; text: string }[] };
-    return j.segments.map((s) => ({ start: s.start, end: s.end, text: s.text.trim() }));
+    const j = (await r.json()) as {
+      segments: { start: number; end: number; text: string }[];
+      words?: { start: number; end: number; word: string }[];
+    };
+    const words = j.words ?? [];
+    return j.segments.map((s) => {
+      const text = s.text.trim();
+      const w = words.filter((x) => x.start >= s.start - 0.01 && x.start < s.end);
+      return { start: s.start, end: s.end, text, words: w.length ? w : spreadWords(text, s.start, s.end) };
+    });
   }
   const n = Math.max(1, Math.floor(dur / 4));
-  return Array.from({ length: n }, (_, i) => ({
-    start: i * 4, end: Math.min(dur, (i + 1) * 4), text: `Segment ${i + 1} (no transcription key configured)`,
-  }));
+  return Array.from({ length: n }, (_, i) => {
+    const start = i * 4, end = Math.min(dur, (i + 1) * 4);
+    const text = `Segment ${i + 1} with no transcription key configured`;
+    return { start, end, text, words: spreadWords(text, start, end) };
+  });
 }
 
 /** Claude picks clips if ANTHROPIC_API_KEY is set; otherwise fixed windows. */
@@ -81,23 +130,59 @@ async function pickClips(segs: Seg[], dur: number): Promise<Pick[]> {
   });
 }
 
-function srtTime(t: number) {
-  const ms = Math.round(t * 1000);
-  const f = (n: number, w = 2) => String(n).padStart(w, "0");
-  return `${f(Math.floor(ms / 3600000))}:${f(Math.floor(ms / 60000) % 60)}:${f(Math.floor(ms / 1000) % 60)},${f(ms % 1000, 3)}`;
+function assTime(t: number) {
+  const cs = Math.max(0, Math.round(t * 100));
+  const h = Math.floor(cs / 360000), m = Math.floor(cs / 6000) % 60, sec = Math.floor(cs / 100) % 60;
+  return `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}.${String(cs % 100).padStart(2, "0")}`;
+}
+
+const assEscape = (w: string) => w.replace(/[{}\\]/g, "").replace(/\n/g, " ");
+
+/**
+ * Word-by-word animated captions: words shown in groups of three, the word being
+ * spoken pops (scale + yellow) while the rest of the group stays white.
+ */
+function buildAss(words: Word[], clipStart: number, clipEnd: number): string {
+  const ws = words
+    .filter((w) => w.end > clipStart && w.start < clipEnd)
+    .map((w) => ({ word: assEscape(w.word.trim()).toUpperCase(), start: Math.max(0, w.start - clipStart), end: Math.min(clipEnd, w.end) - clipStart }))
+    .filter((w) => w.word);
+  const events: string[] = [];
+  for (let g = 0; g < ws.length; g += 3) {
+    const group = ws.slice(g, g + 3);
+    group.forEach((cur, i) => {
+      const next = group[i + 1]?.start ?? cur.end;
+      const end = Math.max(next, cur.start + 0.05);
+      const line = group
+        .map((w, j) => (j === i
+          ? `{\\c&H00E6FF&\\fscx85\\fscy85\\t(0,90,\\fscx115\\fscy115)\\t(90,160,\\fscx105\\fscy105)}${w.word}{\\r}`
+          : w.word))
+        .join(" ");
+      events.push(`Dialogue: 0,${assTime(cur.start)},${assTime(end)},Pop,,0,0,0,,${line}`);
+    });
+  }
+  return `[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Pop,DejaVu Sans,78,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,6,3,2,60,60,420,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+${events.join("\n")}
+`;
 }
 
 async function render(src: string, p: Pick, segs: Seg[], out: string, work: string) {
-  const inside = segs.filter((s) => s.end > p.start && s.start < p.end);
-  const srt = inside
-    .map((s, i) => `${i + 1}\n${srtTime(Math.max(0, s.start - p.start))} --> ${srtTime(Math.min(p.end, s.end) - p.start)}\n${s.text}\n`)
-    .join("\n");
-  const srtPath = path.join(work, `${path.basename(out, ".mp4")}.srt`);
-  await fs.writeFile(srtPath, srt);
-  // Center-crop to 9:16, scale to 1080x1920, burn captions.
-  const style = "Alignment=2,MarginV=180,FontSize=18,Bold=1,Outline=2,PrimaryColour=&H00FFFFFF&";
-  const esc = srtPath.replace(/\\/g, "/").replace(/:/g, "\\:");
-  const vf = `crop=ih*9/16:ih,scale=1080:1920,subtitles='${esc}':force_style='${style}'`;
+  const assPath = path.join(work, `${path.basename(out, ".mp4")}.ass`);
+  await fs.writeFile(assPath, buildAss(segs.flatMap((s) => s.words), p.start, p.end));
+  const esc = assPath.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
+  // Center-crop to 9:16, scale to 1080x1920, burn animated captions.
+  const vf = `crop=ih*9/16:ih,scale=1080:1920,ass='${esc}'`;
   await run("ffmpeg", ["-y", "-ss", String(p.start), "-to", String(p.end), "-i", src, "-vf", vf,
     "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-c:a", "aac", "-movflags", "+faststart", out]);
 }
@@ -115,9 +200,12 @@ export async function processProject(id: string) {
     await pool.query("update projects set duration=$2 where id=$1", [id, dur]);
 
     await setStage(id, "Transcribing");
-    const audio = path.join(work, "audio.mp3");
-    await run("ffmpeg", ["-y", "-i", proj.source_path, "-vn", "-ac", "1", "-ar", "16000", "-b:a", "48k", audio]);
-    const segs = await transcribe(audio, dur);
+    let segs: Seg[] = [];
+    if (await hasAudio(proj.source_path)) {
+      const audio = path.join(work, "audio.mp3");
+      await run("ffmpeg", ["-y", "-i", proj.source_path, "-vn", "-ac", "1", "-ar", "16000", "-b:a", "48k", audio]);
+      segs = await transcribe(audio, dur);
+    }
 
     await setStage(id, "Finding viral moments");
     const picks = await pickClips(segs, dur);

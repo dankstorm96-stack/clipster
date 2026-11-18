@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
 type Clip = { id: string; title: string; reason: string; score: number; start_s: number; end_s: number; file_path: string };
@@ -8,11 +9,15 @@ type Project = { title: string; status: string; stage: string | null; error: str
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [p, setP] = useState<Project | null>(null);
+  const [missing, setMissing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     let stop = false;
     async function tick() {
       const r = await fetch(`/api/projects/${id}`);
+      if (r.status === 401) return router.replace("/login");
+      if (r.status === 404) return setMissing(true);
       if (r.ok && !stop) {
         const j = (await r.json()) as Project;
         setP(j);
@@ -21,8 +26,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
     tick();
     return () => { stop = true; };
-  }, [id]);
+  }, [id, router]);
 
+  if (missing) return <main className="p-12">Project not found. <Link href="/dashboard" className="underline">Back to projects</Link></main>;
   if (!p) return <main className="p-12">Loading…</main>;
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">

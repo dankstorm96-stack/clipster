@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ClipForge
 
-## Getting Started
+Turn long videos into short vertical clips with animated captions.
 
-First, run the development server:
+## Features
+- Email/password accounts (scrypt hashes, httpOnly session cookies); each user sees only their own projects and clips
+- Upload a video, or import from an https link (direct MP4s, YouTube and other sites via yt-dlp)
+- Transcription with Whisper (`OPENAI_API_KEY`) and clip selection with Claude (`ANTHROPIC_API_KEY`); without keys a deterministic fallback runs
+- 9:16 center-crop at 1080x1920 with word-by-word animated captions (ASS/libass)
+- Browser playback and MP4 download
 
+## Requirements
+- Node.js 22+, PostgreSQL 14+
+- `ffmpeg`/`ffprobe` built with libass
+- `pip install "yt-dlp[default]"` (the `[default]` extra includes the YouTube challenge solver)
+
+## Run
 ```bash
+cp .env.example .env.local   # set DATABASE_URL and optional API keys
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tables are created on first request. Video jobs run inside the web process; move `processProject` to a queue worker for production.

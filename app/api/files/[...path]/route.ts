@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Readable } from "node:stream";
+import { currentUser } from "@/lib/auth";
+import { pool } from "@/lib/db";
 import { DATA_DIR } from "@/lib/pipeline";
 
 export const runtime = "nodejs";
@@ -11,6 +13,10 @@ export async function GET(req: Request, ctx: { params: Promise<{ path: string[] 
   const { path: parts } = await ctx.params;
   const rel = parts.join("/");
   if (!/^[0-9a-f-]{36}\/clips\/clip\d+\.mp4$/.test(rel)) return new Response("Not found", { status: 404 });
+  const user = await currentUser();
+  if (!user) return new Response("Unauthorized", { status: 401 });
+  const own = await pool.query("select 1 from projects where id=$1 and user_id=$2", [rel.slice(0, 36), user.id]);
+  if (!own.rows[0]) return new Response("Not found", { status: 404 });
   const file = path.join(DATA_DIR, rel);
   let size: number;
   try { size = fs.statSync(file).size; } catch { return new Response("Not found", { status: 404 }); }
