@@ -97,7 +97,7 @@ bonus-stack, objection-destroyer, offer-angles, hormozi-hooks and hormozi-pitch.
 | 3–10s | "They ask. You reply late. They've already bought somewhere else." | DM marked "seen 9h ago" → "nvm, got it elsewhere" |
 | 10–20s | "We build your online store for you. Products, payments, shipping, all set up. Customers see the price, tap buy, done. You just send us your photos." | WhatsApp photo send → finished store on a phone → "Order received" notification |
 | 20–26s | "Live in 14 days, or you don't pay." | Text: **"Live in 14 days or you don't pay"** |
-| 26–30s | "Tap below and type STORE. Wake up to orders, not DMs." | Phone on bedside table lighting up with order notifications |
+| 26–30s | "Tap below to book a free 15-minute call. Wake up to orders, not DMs." | Order notifications lighting up a phone → button: **"Book my free call"** |
 
 ### Script 2: "Rented Land"
 | Time | Voiceover | On screen |
@@ -106,7 +106,7 @@ bonus-stack, objection-destroyer, offer-angles, hormozi-hooks and hormozi-pitch.
 | 3–10s | "One algorithm change, one hacked account, and your sales go to zero. Brands that last own their store." | Reach graph crashing → text: **"Own it."** |
 | 10–20s | "We build yours: your own domain, your own checkout, your own customer list. Done for you in 14 days. You send photos; we do everything else." | yourbrand.com typed into a browser → store loads → customer list filling up |
 | 20–26s | "Keep posting on Instagram. Just send the buyers somewhere you own." | Instagram bio link → store checkout |
-| 26–30s | "Tap below. Let's give your brand a home." | Button: **"Build my store"** |
+| 26–30s | "Book a free 15-minute call below. Let's give your brand a home." | Button: **"Book my free call"** |
 
 ### Script 3: "Pay the Rest When You Love It"
 | Time | Voiceover | On screen |
@@ -115,7 +115,7 @@ bonus-stack, objection-destroyer, offer-angles, hormozi-hooks and hormozi-pitch.
 | 3–10s | "Most people never go online because they're scared of paying a designer who takes the money and disappears." | Chat: payment sent → "seen" → no reply for days |
 | 10–20s | "So we do it differently. Pay 50% to start. We build your full online store: products, payments, shipping, all set up." | Text: **"50% to start"** → store being built → finished store on a phone |
 | 20–26s | "Then you get a full month of unlimited changes. Pay the other half only when you're happy." | Revision montage: "Change 1… Change 2… Approved ✅". Text: **"1 month of unlimited revisions"** |
-| 26–30s | "Tap below and type STORE to get started." | Button: **"Start my store"** |
+| 26–30s | "Tap below to book a free 15-minute call. No pressure, no tech talk." | Button: **"Book my free call"** |
 
 ### Script 4: "The Shop That Never Closes"
 | Time | Voiceover | On screen |
@@ -124,7 +124,7 @@ bonus-stack, objection-destroyer, offer-angles, hormozi-hooks and hormozi-pitch.
 | 3–10s | "Right now, someone three cities away wants exactly what you sell. They just can't find you." | Map zooming out from the shop to the whole country |
 | 10–20s | "We take your shop online. Your products, your brand, payments and delivery built in. Open day and night, to anyone, anywhere." | Shop products → same products on a polished store → parcels going out |
 | 20–26s | "No tech skills needed. Live in 14 days." | Text: **"No tech. 14 days."** |
-| 26–30s | "Tap below. Open your second shop, the one that never closes." | Store on a phone with a **"Open 24/7"** badge |
+| 26–30s | "Book a free 15-minute call below. Let's open the shop that never closes." | Store on a phone with an **"Open 24/7"** badge → button: **"Book my free call"** |
 
 ### Script 5: "The Leaky Website" (redesign)
 | Time | Voiceover | On screen |
@@ -133,7 +133,7 @@ bonus-stack, objection-destroyer, offer-angles, hormozi-hooks and hormozi-pitch.
 | 3–10s | "Visitors land. Slow load. Clunky on their phone. Gone. You'll never even know they came." | Loading spinner → visitor counter up, orders at 0 |
 | 10–20s | "We rebuild it to sell: fast, built for phones, product pages that make people buy. Live in 14 days. You just approve the designs." | Before/after scroll of the same store |
 | 20–26s | "If it doesn't convert better than your old site in 60 days, we keep working, free, until it does." | Text: **"Better, or we work free"** |
-| 26–30s | "Tap below for a free 5-minute video audit of your site." | Button: **"Audit my site free"** |
+| 26–30s | "Book a free 15-minute call. We'll show you exactly where your site is losing sales." | Button: **"Book my free call"** |
 
 ---
 
